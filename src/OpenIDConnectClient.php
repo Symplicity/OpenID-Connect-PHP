@@ -130,22 +130,22 @@ class OpenIDConnectClient
     /**
      * @var string if we aquire an access token it will be stored here
      */
-    private $accessToken;
+    protected $accessToken;
 
     /**
      * @var string if we aquire a refresh token it will be stored here
      */
-    private $refreshToken;
+    protected $refreshToken;
 
     /**
      * @var string if we acquire an id token it will be stored here
      */
-    private $idToken;
+    protected $idToken;
 
     /**
      * @var string stores the token response
      */
-    private $tokenResponse;
+    protected $tokenResponse;
 
     /**
      * @var array holds scopes
@@ -200,7 +200,7 @@ class OpenIDConnectClient
     /**
      * @var array holds verified jwt claims
      */
-    private $verifiedClaims = array();
+    protected $verifiedClaims = array();
 
     /**
      * @var bool Allow OAuth 2 implicit flow; see http://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth
@@ -261,7 +261,6 @@ class OpenIDConnectClient
 
         // If we have an authorization code then proceed to request a token
         if (isset($_REQUEST["code"])) {
-
             $code = $_REQUEST["code"];
             $token_json = $this->requestTokens($code);
 
@@ -454,7 +453,7 @@ class OpenIDConnectClient
      * @return string
      *
      */
-    private function getProviderConfigValue($param, $default = null) {
+    protected function getProviderConfigValue($param, $default = null) {
 
         // If the configuration value is not available, attempt to fetch it from a well known config endpoint
         // This is also known as auto "discovery"
@@ -567,7 +566,7 @@ class OpenIDConnectClient
      * Start Here
      * @return void
      */
-    private function requestAuthorization() {
+    protected function requestAuthorization() {
 
         $auth_endpoint = $this->getProviderConfigValue("authorization_endpoint");
         $response_type = "code";
@@ -595,11 +594,10 @@ class OpenIDConnectClient
 
         // If the client has been registered with additional response types
         if (sizeof($this->responseTypes) > 0) {
-            $auth_params = array_merge($auth_params, array('response_type' => implode(' ', $this->responseTypes)));
+            $auth_params = array_merge($auth_params, array('response_type' => implode('+', $this->responseTypes)));
         }
 
         $auth_endpoint .= (strpos($auth_endpoint, '?') === false ? '?' : '&') . http_build_query($auth_params, null, '&');
-
         $this->commitSession();
         $this->redirect($auth_endpoint);
     }
@@ -670,7 +668,7 @@ class OpenIDConnectClient
      * @param $code
      * @return mixed
      */
-    private function requestTokens($code) {
+    protected function requestTokens($code) {
         $token_endpoint = $this->getProviderConfigValue("token_endpoint");
         $token_endpoint_auth_methods_supported = $this->getProviderConfigValue("token_endpoint_auth_methods_supported", ['client_secret_basic']);
 
@@ -885,7 +883,7 @@ class OpenIDConnectClient
      * @param object $claims
      * @return bool
      */
-    private function verifyJWTclaims($claims, $accessToken = null) {
+    protected function verifyJWTclaims($claims, $accessToken = null) {
 	if(isset($claims->at_hash) && isset($accessToken)){
             if(isset($this->getAccessTokenHeader()->alg) && $this->getAccessTokenHeader()->alg != 'none'){
                 $bit = substr($this->getAccessTokenHeader()->alg, 2, 3);
@@ -921,7 +919,7 @@ class OpenIDConnectClient
      * @param int $section the section we would like to decode
      * @return object
      */
-    private function decodeJWT($jwt, $section = 0) {
+    protected function decodeJWT($jwt, $section = 0) {
 
         $parts = explode(".", $jwt);
         return json_decode(base64url_decode($parts[$section]));
